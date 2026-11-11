@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow, noimageindex">
+<title>114625_1962 r1</title>
+<link rel="stylesheet" href="review.css">
+</head>
+<body>
+<header id="top">
+  <button id="btn-side" class="icon" title="Show or hide the side panel (L)" aria-label="Toggle side panel">&#9776;</button>
+  <div class="ident"><h1 id="title"></h1><span id="rev" class="badge"></span></div>
+  <span id="stale" class="stale" hidden></span>
+  <div class="grow"></div>
+  <button id="btn-changes" class="warn">Request changes</button>
+  <button id="btn-approve" class="ok">Approve</button>
+</header>
+
+<main id="main">
+  <aside id="side">
+    <details open id="sec-zones"><summary>Zones <span id="zone-count" class="count"></span></summary>
+      <div class="row-tools"><button id="zones-all" class="link">All</button><button id="zones-none" class="link">None</button></div>
+      <ul id="zones" class="list"></ul>
+    </details>
+    <details open id="sec-doubts"><summary>Agent's doubts <span id="doubt-count" class="count"></span></summary>
+      <p class="hint">Click one to jump there. Tick it when you've looked. &ldquo;Wrong&rdquo; starts a note on that spot.</p>
+      <ul id="doubts" class="list"></ul>
+    </details>
+    <details open id="sec-compare" hidden><summary>Changes since previous revision <span id="change-count" class="count"></span></summary>
+      <label class="check"><input type="checkbox" id="cmp-on"> Highlight changes <kbd>C</kbd></label>
+      <ul id="changes" class="list"></ul>
+    </details>
+    <details id="sec-prior" hidden><summary>Last review and the agent's replies <span id="prior-count" class="count"></span></summary>
+      <ul id="prior" class="list"></ul>
+    </details>
+    <details open id="sec-notes-mine"><summary>Your notes <span id="note-count" class="count"></span></summary>
+      <p id="notes-empty" class="hint">Nothing yet. Use Pin, Box or Draw on the map to mark a problem.</p>
+      <ul id="notes" class="list"></ul>
+    </details>
+    <details id="sec-agent"><summary>Agent's notes on this map</summary>
+      <ul id="agent-notes" class="plain"></ul>
+    </details>
+    <details id="sec-cost"><summary>Cost and checks</summary>
+      <dl id="facts" class="facts"></dl>
+    </details>
+  </aside>
+
+  <section id="stage" aria-label="Map">
+    <canvas id="map" tabindex="0"></canvas>
+    <div id="toolbar" role="toolbar" aria-label="Map tools">
+      <div class="seg" role="radiogroup" aria-label="Tool">
+        <button data-tool="pan" title="Move and inspect (V)">Move</button>
+        <button data-tool="pin" title="Drop a pin (P)">Pin</button>
+        <button data-tool="box" title="Drag a box (B)">Box</button>
+        <button data-tool="draw" title="Draw freehand (F)">Draw</button>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="What to show">
+        <button data-mode="overlay" title="Filled zones (T toggles to scan)">Zones</button>
+        <button data-mode="outlines" title="Outlines only (O)">Outlines</button>
+        <button data-mode="scan" title="Scan only (T). Hold Space to peek.">Scan</button>
+      </div>
+      <button id="btn-swipe" class="tgl" title="Swipe between scan and zones (S)">Swipe</button>
+      <button id="btn-cmp" class="tgl" title="Highlight changes since the previous revision (C)" hidden>Compare</button>
+      <label class="slider" title="Zone opacity ([ and ])">Opacity <input type="range" id="opacity" min="0" max="100" value="45"></label>
+      <div class="seg zoom">
+        <button id="zoom-out" title="Zoom out (-)" aria-label="Zoom out">&minus;</button>
+        <button id="zoom-fit" title="Fit the whole map (0)">Fit</button>
+        <button id="zoom-in" title="Zoom in (+)" aria-label="Zoom in">+</button>
+      </div>
+      <button id="btn-help" class="icon" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
+    </div>
+    <div id="divider" hidden><span></span></div>
+    <div id="tip" hidden></div>
+    <div id="status"><span id="st-pos"></span><span id="st-zoom"></span><span id="st-info"></span></div>
+
+    <form id="note-form" hidden>
+      <div class="form-head"><strong id="nf-title"></strong><button type="button" id="nf-close" class="icon" aria-label="Close">&times;</button></div>
+      <label>Problem
+        <select id="nf-problem">
+          <option value="wrong_zone">Wrong zone</option>
+          <option value="boundary_wrong">Boundary in the wrong place</option>
+          <option value="missing_area">Area missing (should be filled)</option>
+          <option value="extra_area">Filled but shouldn't be</option>
+          <option value="label_misread">Label misread</option>
+          <option value="other">Other</option>
+        </select></label>
+      <label>Correct zone <span class="opt">optional</span>
+        <input id="nf-should" list="nf-zones" autocomplete="off"><datalist id="nf-zones"></datalist></label>
+      <label>Note <span class="opt">what's wrong?</span><textarea id="nf-note" rows="3"></textarea></label>
+      <div class="form-foot"><button type="button" id="nf-delete" class="link danger">Delete</button><div class="grow"></div><button type="submit" class="primary">Save <kbd>Ctrl+Enter</kbd></button></div>
+    </form>
+  </section>
+</main>
+
+<dialog id="submit">
+  <form method="dialog" id="submit-form">
+    <h2 id="sb-title"></h2>
+    <p id="sb-summary"></p>
+    <p id="sb-warn" class="warnbox" hidden></p>
+    <label>Comment for the issue <span class="opt">optional</span><textarea id="sb-comment" rows="3"></textarea></label>
+    <fieldset>
+      <legend>Send to GitHub</legend>
+      <p class="hint">Uses your own fine-grained token, with Contents and Issues (read and write) on this repository only. It stays in this browser and is never committed or put in a URL.</p>
+      <label>Repository <input id="sb-repo" placeholder="owner/name" autocomplete="off" spellcheck="false"></label>
+      <label>Token <input id="sb-token" type="password" autocomplete="off" spellcheck="false"></label>
+      <div class="row-tools"><span id="sb-who" class="hint"></span><div class="grow"></div><button type="button" id="sb-forget" class="link">Forget token</button></div>
+    </fieldset>
+    <ol id="sb-steps" class="steps" hidden></ol>
+    <p id="sb-error" class="errbox" hidden></p>
+    <div class="form-foot">
+      <button type="button" id="sb-json" class="link" title="No token? Download the review and hand it over.">Download JSON</button>
+      <button type="button" id="sb-png" class="link">Download marked-up PNG</button>
+      <div class="grow"></div>
+      <button type="button" id="sb-cancel">Cancel</button>
+      <button type="button" id="sb-send" class="primary">Send</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="help">
+  <h2>Keyboard shortcuts</h2>
+  <dl class="keys">
+    <dt><kbd>V</kbd> <kbd>P</kbd> <kbd>B</kbd> <kbd>F</kbd></dt><dd>Move, Pin, Box, Draw</dd>
+    <dt><kbd>T</kbd></dt><dd>Toggle scan and zones</dd>
+    <dt>Hold <kbd>Space</kbd></dt><dd>Peek at the scan</dd>
+    <dt><kbd>O</kbd></dt><dd>Outlines only</dd>
+    <dt><kbd>S</kbd></dt><dd>Swipe between scan and zones</dd>
+    <dt><kbd>C</kbd></dt><dd>Compare with previous revision</dd>
+    <dt><kbd>[</kbd> <kbd>]</kbd></dt><dd>Less or more opacity</dd>
+    <dt><kbd>N</kbd> / <kbd>Shift+N</kbd></dt><dd>Next or previous doubt</dd>
+    <dt><kbd>X</kbd></dt><dd>Tick the current doubt, go to the next</dd>
+    <dt><kbd>D</kbd></dt><dd>Show or hide doubt markers</dd>
+    <dt><kbd>+</kbd> <kbd>-</kbd> <kbd>0</kbd></dt><dd>Zoom in, out, fit</dd>
+    <dt>Arrow keys</dt><dd>Move the map</dd>
+    <dt><kbd>L</kbd></dt><dd>Show or hide the side panel</dd>
+    <dt><kbd>Ctrl+Z</kbd></dt><dd>Remove your last note</dd>
+    <dt><kbd>Esc</kbd></dt><dd>Cancel, or back to Move</dd>
+    <dt>Right-drag</dt><dd>Move the map while using Pin, Box or Draw</dd>
+  </dl>
+  <div class="form-foot"><div class="grow"></div><button id="help-close" class="primary">Close</button></div>
+</dialog>
+<script src="data.js"></script>
+<script src="review.js"></script>
+</body>
+</html>

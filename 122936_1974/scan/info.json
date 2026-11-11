@@ -1,0 +1,36 @@
+{
+  "key": {
+    "sha": "c52f9a4e6bb797dcfae0ccd7d63c49e9b030bc477a84c016bae7023d70bad5f6",
+    "rotate": 0,
+    "version": 1
+  },
+  "tile": 512,
+  "format": "webp",
+  "levels": [
+    {
+      "w": 2522,
+      "h": 3315,
+      "cols": 5,
+      "rows": 7
+    },
+    {
+      "w": 1261,
+      "h": 1658,
+      "cols": 3,
+      "rows": 4
+    },
+    {
+      "w": 631,
+      "h": 829,
+      "cols": 2,
+      "rows": 2
+    },
+    {
+      "w": 316,
+      "h": 415,
+      "cols": 1,
+      "rows": 1
+    }
+  ],
+  "bytes": 537182
+}
